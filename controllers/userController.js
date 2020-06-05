@@ -1,6 +1,9 @@
 const User = require('../models/User')
-exports.logIn = ()=>{
-
+exports.logIn = (req,res)=>{
+    let user = new User(req.body)
+    user.login()
+    .then(resultas=>res.send(resultas))
+    .catch(err=>res.send(err))
 }
 exports.logOut = ()=>{
     

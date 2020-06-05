@@ -1,3 +1,4 @@
+    const bcrypt = require('bcryptjs');
     const validator = require('validator');
     const userCollection = require('../db').collection('user')
     class User{
@@ -13,7 +14,6 @@
             username:this.data.username.trim().toLowerCase(),
             email: this.data.email.trim().toLowerCase(),
             password:this.data.password
-
         }
     }
     validation(){
@@ -30,8 +30,27 @@
         this.cleanUp()
         this.validation()
         if (!this.error.length ) {
+            let salt = bcrypt.genSaltSync(10)
+            this.data.password = bcrypt.hashSync(this.data.password,salt)
             userCollection.insertOne(this.data)
         }
+    }
+
+    login() { 
+            return new Promise ((resolve,reject)=>{
+                this.cleanUp()
+                userCollection.findOne({username:this.data.username},(err,acceptedUserName)=>{
+                    if (acceptedUserName && bcrypt.compareSync(this.data.password,acceptedUserName.password)) {
+                        resolve('congats')
+                    }
+                    else{
+                        reject('invalid user-name password')
+                    }
+                })
+            })
+            
+        
+        
     }
 }
 module.exports = User

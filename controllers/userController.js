@@ -8,7 +8,14 @@ exports.logIn = (req,res)=>{
             res.redirect('/')
         })
     } )
-    .catch(err=>res.send(err))
+    .catch(err=>{
+        req.flash('error',err)
+        req.session.save(function() {
+            res.redirect("/")
+        })
+        
+    })
+        
 }
 exports.logout = (req,res) => {
     req.session.destroy(function(){
@@ -28,7 +35,6 @@ exports.home = function (req,res){
     if (req.session.user) {
         res.render('home-dashbord',{username: req.session.user.username})
     } else {
-        res.render('home-gust')
+        res.render('home-gust',{errors:req.flash('error')})
     }
-    
 }

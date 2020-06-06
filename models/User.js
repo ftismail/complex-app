@@ -44,7 +44,7 @@
                         resolve('congats')
                     }
                     else{
-                        reject('invalid user-name password')
+                        reject('invalid username or password')
                     }
                 })
             })

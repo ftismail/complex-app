@@ -3,7 +3,7 @@ exports.logIn = (req,res)=>{
     let user = new User(req.body)
     user.login()
     .then(resultas=> {
-        req.session.user = {username:user.data.username}
+        req.session.user = {username:user.data.username,avatar:user.avatar}
         req.session.save(function(){
             res.redirect('/')
         })
@@ -26,7 +26,7 @@ exports.register = function(req,res){
     let user = new User(req.body)
     user.register()
     .then(()=>{
-        req.session.user = {username:user.data.username}
+        req.session.user = {username:user.data.username,avatar:user.avatar}
         req.session.save(function(){
             res.redirect('/')
         })
@@ -42,7 +42,7 @@ exports.register = function(req,res){
 }
 exports.home = function (req,res){
     if (req.session.user) {
-        res.render('home-dashbord',{username: req.session.user.username})
+        res.render('home-dashbord',{username: req.session.user.username,avatar:req.session.user.avatar})
     } else {
         res.render('home-gust',{errors:req.flash('error'),registerErrors:req.flash('registerErrors')})
     }

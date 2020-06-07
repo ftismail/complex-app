@@ -16,7 +16,8 @@
             password:this.data.password
         }
     }
-    validation(){
+    validation(){ 
+        return new Promise(async (resolve,reject)=>{
         if(this.data.username == "") this.error.push('you must put a valid username')
         if(this.data.username !== "" && !validator.isAlphanumeric(this.data.username)){this.error('user name can only contain numbers and lettres')}
         if(!validator.isEmail(this.data.email)) this.error.push('you must put a valid email')
@@ -25,15 +26,37 @@
         if(this.data.password.length > 25 ) this.error.push('your password can not exceed 25 charecters or numbers')
         if(this.data.username.length > 0 && this.data.username.length < 3 ) this.error.push('your username should be at least 3 charecters or numbers')
         if(this.data.username.length > 20 ) this.error.push('your username can not exceed 20 charecters or numbers')
+        ////check if the userName has already exist
+        if(this.data.username.length > 3 && this.data.username.length < 20 && validator.isAlphanumeric(this.data.username)) {
+            let userNameExist = userCollection.findOne({username:this.data.username})
+            if(this.userNameExist){this.error.push('this user name is already token')}
+        }
+        ////check if the userName has already exist
+        if(this.data.username.length > 3 && this.data.username.length < 20 && validator.isAlphanumeric(this.data.username)) {
+            let userNameExist = await userCollection.findOne({username:this.data.username})
+            if(userNameExist){this.error.push('this user name is already token')}
+        }
+        ////check if the userName has already exist
+        if(this.data.username.length > 3 && this.data.username.length < 20 && validator.isAlphanumeric(this.data.username)) {
+            let emailExist = await userCollection.findOne({email:this.data.email})
+            if(emailExist){this.error.push('this email is already token')}}
+            resolve()
+        })
     }
     register(){
-        this.cleanUp()
-        this.validation()
-        if (!this.error.length ) {
-            let salt = bcrypt.genSaltSync(10)
-            this.data.password = bcrypt.hashSync(this.data.password,salt)
-            userCollection.insertOne(this.data)
-        }
+        return new Promise( async (resolve,reject)=>{
+            this.cleanUp()
+            await this.validation()
+            if (!this.error.length ) {
+                let salt = bcrypt.genSaltSync(10)
+                this.data.password = bcrypt.hashSync(this.data.password,salt)
+                await userCollection.insertOne(this.data)
+                resolve()
+            }
+            else{
+                reject(this.error)
+            }
+        })
     }
     login() { 
             return new Promise ((resolve,reject)=>{

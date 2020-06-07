@@ -25,19 +25,20 @@ exports.logout = (req,res) => {
 exports.register = function(req,res){
     let user = new User(req.body)
     user.register()
-    if (user.error.length) {
-        user.error.forEach(function(e){
+    .then(()=>{
+        req.session.user = {username:user.data.username}
+        req.session.save(function(){
+            res.redirect('/')
+        })
+    })
+    .catch((resultas)=>{
+        resultas.forEach(function(e){
             req.flash('registerErrors',e)
         })
         req.session.save(function(){
             res.redirect('/')
         })
-    } else {
-        req.session.user = {username:user.data.username}
-        req.session.save(function(){
-            res.redirect('/')
-        })
-    }
+    })
 }
 exports.home = function (req,res){
     if (req.session.user) {

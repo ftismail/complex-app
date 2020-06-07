@@ -35,7 +35,6 @@
             userCollection.insertOne(this.data)
         }
     }
-
     login() { 
             return new Promise ((resolve,reject)=>{
                 this.cleanUp()

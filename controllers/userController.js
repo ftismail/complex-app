@@ -26,15 +26,23 @@ exports.register = function(req,res){
     let user = new User(req.body)
     user.register()
     if (user.error.length) {
-        res.send(user.error)
+        user.error.forEach(function(e){
+            req.flash('registerErrors',e)
+        })
+        req.session.save(function(){
+            res.redirect('/')
+        })
     } else {
-        res.send('thanjs you have been refistred without any problems')
+        req.session.user = {username:user.data.username}
+        req.session.save(function(){
+            res.redirect('/')
+        })
     }
 }
 exports.home = function (req,res){
     if (req.session.user) {
         res.render('home-dashbord',{username: req.session.user.username})
     } else {
-        res.render('home-gust',{errors:req.flash('error')})
+        res.render('home-gust',{errors:req.flash('error'),registerErrors:req.flash('registerErrors')})
     }
 }

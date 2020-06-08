@@ -1,4 +1,14 @@
 const User = require('../models/User')
+exports.mustBeLogedIn = (req,res,next) => {
+    if (req.session.user) {
+        next()
+    } else {
+        req.flash('error','you must be logedin to see this content')
+        req.session.save(function(){
+            res.redirect('/')
+        })
+    }
+}
 exports.logIn = (req,res)=>{
     let user = new User(req.body)
     user.login()
@@ -42,7 +52,7 @@ exports.register = function(req,res){
 }
 exports.home = function (req,res){
     if (req.session.user) {
-        res.render('home-dashbord',{username: req.session.user.username,avatar:req.session.user.avatar})
+        res.render('home-dashbord')
     } else {
         res.render('home-gust',{errors:req.flash('error'),registerErrors:req.flash('registerErrors')})
     }

@@ -13,7 +13,7 @@ exports.logIn = (req,res)=>{
     let user = new User(req.body)
     user.login()
     .then(resultas=> {
-        req.session.user = {username:user.data.username,avatar:user.avatar}
+        req.session.user = {username:user.data.username,_id:user.data._id,avatar:user.avatar}
         req.session.save(function(){
             res.redirect('/')
         })
@@ -36,7 +36,7 @@ exports.register = function(req,res){
     let user = new User(req.body)
     user.register()
     .then(()=>{
-        req.session.user = {username:user.data.username,avatar:user.avatar}
+        req.session.user = {username:user.data.username,_id:user.data._id,avatar:user.avatar}
         req.session.save(function(){
             res.redirect('/')
         })

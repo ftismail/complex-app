@@ -9,4 +9,6 @@ router.post('/login',userController.logIn)
 router.post('/logout',userController.logout)
 ///post routers///
 router.get('/create-post',userController.mustBeLogedIn,postContoller.createPostHome)
+router.post('/create-post',userController.mustBeLogedIn,postContoller.createPost)
+router.get('/post/:id',userController.mustBeLogedIn,postContoller.viewSingle)
 module.exports = router

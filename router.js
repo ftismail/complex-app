@@ -10,5 +10,8 @@ router.post('/logout',userController.logout)
 ///post routers///
 router.get('/create-post',userController.mustBeLogedIn,postContoller.createPostHome)
 router.post('/create-post',userController.mustBeLogedIn,postContoller.createPost)
+<<<<<<< HEAD
 router.get('/post/:id',userController.mustBeLogedIn,postContoller.viewSingle)
+=======
+>>>>>>> 14ab38b614ac5d83e445a8c4a2b743aaf0173870
 module.exports = router

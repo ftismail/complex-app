@@ -3,9 +3,11 @@
     const userCollection = require('../db').db().collection('user')
     const md5 = require('md5');
     class User{
-    constructor(data){
+    constructor(data,getAvatar){
         this.data = data
         this.error = []
+        if(getAvatar == undefined){getAvatar=false}
+        if(getAvatar){this.getavatar()}
     }
     cleanUp(){
         if(typeof(this.data.username) != 'string' ){this.data.username=""}
@@ -78,5 +80,27 @@
     getavatar(){
         this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
     }
+    
+findByUsername = (username)=>{
+    return new Promise ( async (resolve,reject)=>{
+        if (typeof(username) != 'string') {
+            reject()
+            return
+        }
+        let userNameExist = await userCollection.findOne({username:username})
+        if (userNameExist) {
+            let userDoument = new User(userNameExist,true)
+            userDoument = {
+                _id:userDoument.data._id,
+                username:userDoument.data.username,
+                avatar:userDoument.avatar
+            }
+            resolve(userDoument)
+        } else {
+            reject()
+        }
+    })
+}
 }
 module.exports = User
+

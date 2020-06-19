@@ -1,4 +1,5 @@
 const User = require('../models/User')
+const Post = require('../models/Post')
 const { render } = require('../app')
 exports.mustBeLogedIn = (req,res,next) => {
     if (req.session.user) {
@@ -55,7 +56,7 @@ exports.home = function (req,res){
     if (req.session.user) {
         res.render('home-dashbord')
     } else {
-        res.render('home-gust',{errors:req.flash('error'),registerErrors:req.flash('registerErrors')})
+        res.render('home-gust',{registerErrors:req.flash('registerErrors')})
     }
 }
 
@@ -71,8 +72,16 @@ exports.ifUserExists = function (req,res,next){
     })
 }
 exports.profilePostScreen = function (req,res,next){
-    res.render('profile-posts',{
-        profileName:req.profileUser.username,
-        profileAvatar:req.profileUser.avatar,
+    let xx = new Post()
+    xx.findByAuthorId(req.profileUser._id) 
+    .then((resultats)=>{
+        res.render('profile-posts',{
+            posts:resultats,
+            profileName:req.profileUser.username,
+            profileAvatar:req.profileUser.avatar,
+         })
+    })
+    .catch(()=>{
+        res.render('404')
     })
 }

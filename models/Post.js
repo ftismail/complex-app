@@ -2,11 +2,10 @@ const postCollection = require('../db').db().collection('posts')
 const ObjectId = require('mongodb').ObjectID
 const User = require ('./User')
 class Post{
-    constructor(data,userId,id){
+    constructor(data,userId){
         this.data = data
         this.error = []
         this.userId = userId
-        this.id = id
     }
     cleanUp(){
         if(typeof(this.data.title) != 'string') {this.data.title=''}
@@ -34,23 +33,25 @@ class Post{
             }
         })
     }
-    findSingleById(){
+    findSingleById(id,visitorId){
         return new Promise(async (resolve,reject)=>{
-            if ( typeof(this.id) != 'string' || !ObjectId.isValid(this.id) ) {
+            if ( typeof(id) != 'string' || !ObjectId.isValid(id) ) {
                 reject()
                 return
             }
             let posts = await postCollection.aggregate([
-                {$match:{_id: new ObjectId(this.id)}},
+                {$match:{_id: new ObjectId(id)}},
                 {$lookup:{from:'user',localField:'author',foreignField:'_id',as:'authorDocument'}},
                 {$project:{
                     title:1,
                     body:1,
                     createDate:1,
+                    authorId:'$author',
                     author:{$arrayElemAt:["$authorDocument",0]}
                 }}
             ]).toArray()
             posts = posts.map(element=>{
+                element.isTheOwner = element.authorId.equals(visitorId)
                 element.author = {
                     username:element.author.username,
                     avatar: new User (element.author,true).avatar
@@ -58,10 +59,36 @@ class Post{
                 return element
             })
             if (posts.length) {
-                console.log(posts)
                 resolve(posts[0])
             } else {
                 reject()
+            }
+        })
+    }
+
+
+    findByAuthorId(authorId){
+        return new Promise( async (resolve,reject)=>{
+            let posts = await postCollection.aggregate([
+                {$match:{author:authorId}},
+                {$sort:{createDate:-1}}
+            ]).toArray()
+            if (posts.length) {
+                resolve(posts)
+            } else {
+                reject()
+            }
+        })
+    }
+    update(postId){
+        return new Promise(async(resolve,reject)=>{
+            this.cleanUp()
+            this.validation()
+            if (!this.error.length) {
+                 await postCollection.findOneAndUpdate({_id: new ObjectId(postId)},{$set:{title:this.data.title,body:this.data.body}},{new:true})
+                resolve('success')
+            } else {
+                resolve('error')
             }
         })
     }

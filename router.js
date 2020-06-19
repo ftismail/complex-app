@@ -13,4 +13,6 @@ router.get('/profile/:username',userController.mustBeLogedIn,userController.ifUs
 router.get('/create-post',userController.mustBeLogedIn,postContoller.createPostHome)
 router.post('/create-post',userController.mustBeLogedIn,postContoller.createPost)
 router.get('/post/:id',userController.mustBeLogedIn,postContoller.viewSinglePost)
+router.get('/post/:id/edit',userController.mustBeLogedIn,postContoller.viewEditPost)
+router.post('/post/:id/edit',userController.mustBeLogedIn,postContoller.edit)
 module.exports = router

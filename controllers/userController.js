@@ -5,7 +5,7 @@ exports.mustBeLogedIn = (req,res,next) => {
     if (req.session.user) {
         next()
     } else {
-        req.flash('error','you must be logedin to see this content')
+        req.flash('errors','you must be logedin to see this content')
         req.session.save(function(){
             res.redirect('/')
         })
@@ -21,7 +21,7 @@ exports.logIn = (req,res)=>{
         })
     } )
     .catch(err=>{
-        req.flash('error',err)
+        req.flash('errors',err)
         req.session.save(function() {
             res.redirect("/")
         })
@@ -71,17 +71,16 @@ exports.ifUserExists = function (req,res,next){
         res.render('404')
     })
 }
-exports.profilePostScreen = function (req,res,next){
-    let xx = new Post()
-    xx.findByAuthorId(req.profileUser._id) 
-    .then((resultats)=>{
+exports.profilePostScreen = async function (req,res,next){
+    try {
+        let xx = new Post()
+        posts = await xx.findByAuthorId(req.profileUser._id) 
         res.render('profile-posts',{
-            posts:resultats,
+            posts:posts,
             profileName:req.profileUser.username,
             profileAvatar:req.profileUser.avatar,
          })
-    })
-    .catch(()=>{
+    } catch (error) {
         res.render('404')
-    })
+    }
 }

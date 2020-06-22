@@ -7,13 +7,19 @@ exports.createPostHome = (req,res) =>{
 
 exports.createPost = (req,res) =>{
     let post = new Post(req.body,req.session.user._id)
-    post.create().then(()=>{
+    post.create().then((newId)=>{
+        req.flash('success','you have created a new post')
         req.session.save(function(){
-            res.redirect('/')
+            res.redirect(`/post/${newId}`)
         })
     })
     .catch((error)=>{
-        res.send(error)
+        error.forEach(error=>{
+            req.flash('errors',error)
+        })
+        req.session.save(function(){
+            res.redirect(`/create-post`)
+        })
     })
 }
 
@@ -36,6 +42,7 @@ exports.viewEditPost = async (req,res)=>{
           } else {
             req.flash("errors", "You do not have permission to perform that action.")
             req.session.save(() => res.redirect("/"))
+            console.log('here')
           }
     } catch  {
             res.render('404')
@@ -61,5 +68,17 @@ exports.edit = async (req,res)=>{
     })
     .catch(()=>{
         res.render('404')
+    })
+}
+exports.deletPost = (req,res)=>{
+    post = new Post()
+    post.delet(req.params.id,req.visitorId)
+    .then(()=>{
+        req.flash('success','post successufly deleted')
+        req.session.save(() => res.redirect(`/profile/${req.session.user.username}`))
+    })
+    .catch(()=>{
+        req.flash('errors','try again')
+        req.session.save(() => res.redirect(`/`))
     })
 }

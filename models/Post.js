@@ -1,6 +1,7 @@
 const postCollection = require('../db').db().collection('posts')
 const ObjectId = require('mongodb').ObjectID
 const User = require ('./User')
+const sanitizeHtml = require('sanitize-html')
 class Post{
     constructor(data,userId){
         this.data = data
@@ -11,8 +12,8 @@ class Post{
         if(typeof(this.data.title) != 'string') {this.data.title=''}
         if(typeof(this.data.body) != 'string') {this.data.body=''}
         this.data = {
-            title:this.data.title.trim(),
-            body:this.data.body.trim(),
+            title:sanitizeHtml(this.data.title.trim(),{allowedTags:[],allowedAttributes:{}}),
+            body:sanitizeHtml(this.data.body.trim(),{allowedTags:[],allowedAttributes:{}}),
             createDate:new Date(),
             author:ObjectId(this.userId)
         }
@@ -26,8 +27,14 @@ class Post{
             this.cleanUp()
             this.validation()
             if (!this.error.length) {
-                await postCollection.insertOne(this.data)
-                resolve()
+                postCollection.insertOne(this.data)
+                .then((info)=>{
+                    resolve(info.ops[0]._id)
+                })
+                .catch(()=>{
+                    this.error.push('try again later')
+                    reject(this.error)
+                })
             } else {
                 reject(this.error)
             }
@@ -65,8 +72,6 @@ class Post{
             }
         })
     }
-
-
     findByAuthorId(authorId){
         return new Promise( async (resolve,reject)=>{
             let posts = await postCollection.aggregate([
@@ -76,7 +81,7 @@ class Post{
             if (posts.length) {
                 resolve(posts)
             } else {
-                reject()
+                resolve(posts)
             }
         })
     }
@@ -89,6 +94,22 @@ class Post{
                 resolve('success')
             } else {
                 resolve('error')
+            }
+        })
+    }
+    delet(postToDelet,currentUserId){
+        return new Promise(async(resolve,reject)=>{
+            try {
+                let post = await this.findSingleById(postToDelet,currentUserId)
+                if (post.isTheOwner) {
+                    await postCollection.deleteOne({_id:new ObjectId(postToDelet) })
+                    resolve()
+                }
+                else{
+                    reject()
+                }
+            } catch (error) {
+                reject()
             }
         })
     }

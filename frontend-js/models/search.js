@@ -1,3 +1,5 @@
+import axios from 'axios'
+import DOMPurify from 'dompurify'
 export default class Search{
     //select DOM element and keep traking any usefull data
     constructor(){
@@ -6,10 +8,15 @@ export default class Search{
         this.overlay = document.querySelector('.search-overlay')
         this.closeIcon = document.querySelector('.close-live-search')
         this.searchInput = document.querySelector('#live-search-field')
+        this.resultatsArea = document.querySelector('.live-search-results')
+        this.loaderIcon = document.querySelector('.circle-loader')
+        this.typeWaitingTimer
+        this.previousValue = ''
         this.events() 
     }
     //events
     events(){
+        this.searchInput.addEventListener('keyup',()=>{this.keyPressHendler()})
         this.headerSearchIcon.addEventListener('click',(e)=>{
             e.preventDefault()
             this.openivelay()
@@ -20,6 +27,61 @@ export default class Search{
         })
     }
     //methodes
+    keyPressHendler(){
+      let value = this.searchInput.value
+      if (value == '') {
+        clearTimeout(this.typeWaitingTimer)
+        this.removeLoader()
+        this.hideResultatsArea()
+      }
+      if (value != "" && value != this.previousValue ) {
+        clearTimeout(this.typeWaitingTimer)
+        this.showLoader()
+        this.hideResultatsArea()
+        this.typeWaitingTimer = setTimeout( ()=>this.sendRequest(),750)
+      }
+      this.previousValue = value
+    }
+    sendRequest(){
+      axios.post('/search',{searchTerm:this.searchInput.value})
+      .then(response=>{
+        console.log(response.data)
+        this.renderResultatsHtml(response.data)
+      })
+      .catch(()=>{
+        alert('th request failed')
+      })
+    }
+    renderResultatsHtml(posts){
+      if (posts.length) {
+        this.resultatsArea.innerHTML = DOMPurify.sanitize(`<div class="list-group shadow-sm">
+        <div class="list-group-item active"><strong>Search Results</strong> (${posts.length} items found)</div>
+        ${posts.map(element =>{
+          let elementDate = new Date(element.createDate)
+          return `<a href="/post/${element._id}" class="list-group-item list-group-item-action">
+          <img class="avatar-tiny" src="${element.author.avatar}"> <strong>${element.title} #1</strong>
+          <span class="text-muted small">by ${element.author.username} on ${elementDate.getDate()} / ${elementDate.getMonth() + 1} / ${elementDate.getFullYear()} </span>
+        </a>`
+        }).join('')}
+      </div>`)
+      } else {
+        this.resultatsArea.innerHTML = `<p>there is no resultast`
+      }
+      this.removeLoader()
+      this.showResultasArea()
+    }
+    showResultasArea(){
+      this.resultatsArea.classList.add('live-search-results--visible')
+    }
+    hideResultatsArea(){
+      this.resultatsArea.classList.remove('live-search-results--visible')
+    }
+    showLoader(){
+      this.loaderIcon.classList.add('circle-loader--visible')
+    }
+    removeLoader(){
+      this.loaderIcon.classList.remove('circle-loader--visible')
+    }
     openivelay(){
         this.overlay.classList.add('search-overlay--visible')
         setTimeout(()=>this.searchInput.focus(),50)
@@ -41,27 +103,8 @@ export default class Search{
         <div class="search-overlay-bottom">
           <div class="container container--narrow py-3">
             <div class="circle-loader"></div>
-            <div class="live-search-results live-search-results--visible">
-              <div class="list-group shadow-sm">
-                <div class="list-group-item active"><strong>Search Results</strong> (4 items found)</div>
-    
-                <a href="#" class="list-group-item list-group-item-action">
-                  <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> <strong>Example Post #1</strong>
-                  <span class="text-muted small">by barksalot on 0/14/2019</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                  <img class="avatar-tiny" src="https://gravatar.com/avatar/b9408a09298632b5151200f3449434ef?s=128"> <strong>Example Post #2</strong>
-                  <span class="text-muted small">by brad on 0/12/2019</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                  <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> <strong>Example Post #3</strong>
-                  <span class="text-muted small">by barksalot on 0/14/2019</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action">
-                  <img class="avatar-tiny" src="https://gravatar.com/avatar/b9408a09298632b5151200f3449434ef?s=128"> <strong>Example Post #4</strong>
-                  <span class="text-muted small">by brad on 0/12/2019</span>
-                </a>
-              </div>
+            <div class="live-search-results ">
+              
             </div>
           </div>
         </div>

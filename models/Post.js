@@ -113,5 +113,33 @@ class Post{
             }
         })
     }
+    search(search){
+        return new Promise(async(resolve,reject)=>{
+            if (typeof(search) == 'string' ) {
+                let posts = await postCollection.aggregate([
+                    {$match:{$text:{$search:search}}},
+                    {$lookup:{from:'user',localField:'author',foreignField:'_id',as:'authorDocument'}},
+                    {$project:{
+                        title:1,
+                        body:1,
+                        createDate:1,
+                        authorId:'$author',
+                        author:{$arrayElemAt:["$authorDocument",0]}
+                    }},
+                    {$sort:{score:{$meta:'textScore'}}}
+                ]).toArray()
+                posts = posts.map(element=>{
+                    element.author = {
+                        username:element.author.username,
+                        avatar: new User (element.author,true).avatar
+                    }
+                    return element
+                })
+                resolve(posts)
+            } else {
+                reject()
+            }
+        })
+    }
 }
 module.exports = Post

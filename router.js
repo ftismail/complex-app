@@ -16,4 +16,6 @@ router.get('/post/:id',userController.mustBeLogedIn,postContoller.viewSinglePost
 router.get('/post/:id/edit',userController.mustBeLogedIn,postContoller.viewEditPost)
 router.post('/post/:id/edit',userController.mustBeLogedIn,postContoller.edit)
 router.post('/post/:id/delet',userController.mustBeLogedIn,postContoller.deletPost)
+///post search///
+router.post('/search',userController.mustBeLogedIn,postContoller.search)
 module.exports = router

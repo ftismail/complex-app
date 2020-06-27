@@ -71,7 +71,7 @@ exports.edit = async (req,res)=>{
     })
 }
 exports.deletPost = (req,res)=>{
-    post = new Post()
+    let post = new Post()
     post.delet(req.params.id,req.visitorId)
     .then(()=>{
         req.flash('success','post successufly deleted')
@@ -80,5 +80,15 @@ exports.deletPost = (req,res)=>{
     .catch(()=>{
         req.flash('errors','try again')
         req.session.save(() => res.redirect(`/`))
+    })
+}
+exports.search = (req,res)=>{
+    let post = new Post()
+    post.search(req.body.searchTerm)
+    .then(resultats=>{
+        res.json(resultats)
+    })
+    .catch(()=>{
+        console.log('wrong')
     })
 }

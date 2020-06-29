@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const userController = require('./controllers/userController')
 const postContoller = require('./controllers/postController')
+const followContoller = require('./controllers/followController')
 ///user routers///
 router.get('/',userController.home)
 router.post('/register',userController.register)
@@ -18,4 +19,7 @@ router.post('/post/:id/edit',userController.mustBeLogedIn,postContoller.edit)
 router.post('/post/:id/delet',userController.mustBeLogedIn,postContoller.deletPost)
 ///post search///
 router.post('/search',userController.mustBeLogedIn,postContoller.search)
+///Following///
+router.post('/addfollower/:username',userController.mustBeLogedIn,followContoller.addFollow)
+
 module.exports = router

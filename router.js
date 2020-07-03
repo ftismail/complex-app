@@ -9,7 +9,9 @@ router.post('/register',userController.register)
 router.post('/login',userController.logIn)
 router.post('/logout',userController.logout)
 ///profile posts///
-router.get('/profile/:username',userController.mustBeLogedIn,userController.ifUserExists,userController.profilePostScreen)
+router.get('/profile/:username',userController.ifUserExists,userController.sharedProfileData,userController.profilePostScreen)
+router.get('/profile/:username/followers',userController.ifUserExists,userController.sharedProfileData,userController.profileFollowrsScreen)
+
 ///post routers///
 router.get('/create-post',userController.mustBeLogedIn,postContoller.createPostHome)
 router.post('/create-post',userController.mustBeLogedIn,postContoller.createPost)
@@ -21,5 +23,5 @@ router.post('/post/:id/delet',userController.mustBeLogedIn,postContoller.deletPo
 router.post('/search',userController.mustBeLogedIn,postContoller.search)
 ///Following///
 router.post('/addfollower/:username',userController.mustBeLogedIn,followContoller.addFollow)
-
+router.post('/removefollower/:username',userController.mustBeLogedIn,followContoller.removeFollow)
 module.exports = router

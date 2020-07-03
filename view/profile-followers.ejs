@@ -1,0 +1,18 @@
+<%-include('includes/header')%>
+<div class="container py-md-5 container--narrow">
+  <%-include('includes/flash')%>
+   <%-include('includes/profile-shared')%>
+   <%if (followers.length){%>
+    <div class="list-group">
+      <% followers.forEach(function(element){%>
+        <a href="/profile/<%=element.username%>" class="list-group-item list-group-item-action">
+        <img class="avatar-tiny" src="<%=element.avatar%>">
+        <strong><%=element.username%></strong> 
+      </a>
+        <%})%>
+    </div>
+      <%}else{%>
+        <h1 class="my-4 text-danger">no post has been published yet</h1>
+      <%}%>
+  </div>
+<%-include('includes/footer')%>

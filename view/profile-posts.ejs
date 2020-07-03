@@ -1,25 +1,15 @@
 <%-include('includes/header')%>
 <div class="container py-md-5 container--narrow">
   <%-include('includes/flash')%>
-    <h2><img class="avatar-small" src="<%=profileAvatar%>"> <%=profileName%>  
-      <form class="ml-2 d-inline" action="/addfollower/<%=profileName%>" method="POST">
-        <button class="btn btn-primary btn-sm">Follow <i class="fas fa-user-plus"></i></button>
-        <!-- <button class="btn btn-danger btn-sm">Stop Following <i class="fas fa-user-times"></i></button> -->
-      </form>
-    </h2>
-    <%if (posts.length){%>
-      <div class="profile-nav nav nav-tabs pt-2 mb-4">
-      <a href="#" class="profile-nav-link nav-item nav-link active">Posts: <%=posts.length%></a>
-      <a href="#" class="profile-nav-link nav-item nav-link ">Followers: 3</a>
-      <a href="#" class="profile-nav-link nav-item nav-link ">Following: 2</a>
-    </div>
+   <%-include('includes/profile-shared')%>
+   <%if (posts.length){%>
     <div class="list-group">
       <% posts.forEach(function(element){%>
         <a href="/post/<%=element._id%>" class="list-group-item list-group-item-action">
         <img class="avatar-tiny" src="<%=profileAvatar%>">
         <strong><%=element.title%></strong> <%= element.createDate.getDate() %>/<%= element.createDate.getMonth() + 1 %>/<%= element.createDate.getFullYear() %>
       </a>
-        <%}) %>
+        <%})%>
     </div>
       <%}else{%>
         <h1 class="my-4 text-danger">no post has been published yet</h1>

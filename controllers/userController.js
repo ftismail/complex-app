@@ -1,6 +1,18 @@
 const User = require('../models/User')
 const Post = require('../models/Post')
+const Follow = require('../models/Follow')
 const { render } = require('../app')
+
+exports.sharedProfileData = async (req,res,next)=>{
+    let isFollowing = false
+    let follow = new Follow()
+    if (req.session.user) {
+        isFollowing = await follow.isVisitorFollowing(req.profileUser._id,req.session.user._id)
+    }
+    req.isFollowing = isFollowing
+    next()
+}
+
 exports.mustBeLogedIn = (req,res,next) => {
     if (req.session.user) {
         next()
@@ -74,13 +86,33 @@ exports.ifUserExists = function (req,res,next){
 exports.profilePostScreen = async function (req,res,next){
     try {
         let xx = new Post()
-        posts = await xx.findByAuthorId(req.profileUser._id) 
+        let posts = await xx.findByAuthorId(req.profileUser._id) 
+        let pos
         res.render('profile-posts',{
             posts:posts,
+            profileId:req.profileUser._id,
             profileName:req.profileUser.username,
             profileAvatar:req.profileUser.avatar,
+            isFollowing:req.isFollowing,
          })
     } catch (error) {
         res.render('404')
+    }
+}
+exports.profileFollowrsScreen = async(req,res)=>{
+    let fallowr = new Follow(req.params.username,req.session.user._id)
+    try {
+        let followers = await fallowr.getFollowrsById(req.profileUser._id)
+        res.render('profile-followers',{
+            followers:followers,
+            profileId:req.profileUser._id,
+            profileName:req.profileUser.username,
+            profileAvatar:req.profileUser.avatar,
+            isFollowing:req.isFollowing,
+        })
+        console.log(followers)
+    } catch (error) {
+        res.render('404')
+        console.log(error)
     }
 }

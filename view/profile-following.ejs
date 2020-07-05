@@ -2,9 +2,9 @@
 <div class="container py-md-5 container--narrow">
   <%-include('includes/flash')%>
    <%-include('includes/profile-shared')%>
-   <%if (followers.length){%>
+   <%if (following.length){%>
     <div class="list-group">
-      <% followers.forEach(function(element){%>
+      <% following.forEach(function(element){%>
         <a href="/profile/<%=element.username%>" class="list-group-item list-group-item-action">
         <img class="avatar-tiny" src="<%=element.avatar%>">
         <strong><%=element.username%></strong> 
@@ -12,7 +12,7 @@
         <%})%>
     </div>
       <%}else{%>
-        <h1 class="my-4 text-danger">no one is following you </h1>
+        <h1 class="my-4 text-danger">you are not following any user</h1>
       <%}%>
   </div>
 <%-include('includes/footer')%>

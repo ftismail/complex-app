@@ -1,6 +1,7 @@
 const postCollection = require('../db').db().collection('posts')
 const ObjectId = require('mongodb').ObjectID
 const User = require ('./User')
+const followsCollection = require('../db').db().collection('follows')
 const sanitizeHtml = require('sanitize-html')
 class Post{
     constructor(data,userId){
@@ -140,6 +141,41 @@ class Post{
                 reject()
             }
         })
+    }
+    countPostsById(userId){
+        return new Promise( async (resolve,reject)=>{
+            let posts = await postCollection.countDocuments({author:userId})
+            resolve(posts)
+        })
+    }
+    getFeed(id){
+        return new Promise( async (resolve,reject)=>{
+            let following = await followsCollection.find({authorId:new ObjectId(id)}).toArray()
+            following = following.map(element=>{
+                 return element.followedId
+            })
+            let followingDoc= await postCollection.aggregate([
+                {$match:{author:{$in:following}}},
+                {$lookup:{from:'user',localField:'author',foreignField:'_id',as:'authorDocument'}},
+                {$project:{
+                    title:1,
+                    body:1,
+                    createDate:1,
+                    authorId:'$author',
+                    author:{$arrayElemAt:["$authorDocument",0]}
+                }},
+                {$sort:{createDate:-1}}
+            ]).toArray()
+            followingDoc =  followingDoc.map(function(element){
+                element.author={
+                    username:element.author.username,
+                    avatar:new User(element.author,true).avatar
+                }
+                return element
+            })
+            resolve(followingDoc)
+        })
+        
     }
 }
 module.exports = Post

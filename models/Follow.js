@@ -14,18 +14,18 @@ class Folow {
      async validation(action){
         let followedAccount = await userCollection.findOne({username:this.followedUserName})
         if (followedAccount) {
-            this.follwedId = followedAccount._id
+            this.followedId = followedAccount._id
         } else {
             this.errors.push('you cant follow this user')
         }
-        let ifFollowerAlreadyExist = await followsCollection.findOne({follwedId:this.follwedId,authorId:new ObjectId(this.authorId)})
+        let ifFollowerAlreadyExist = await followsCollection.findOne({followedId:this.followedId,authorId:new ObjectId(this.authorId)})
         if (action == 'create') {
-            if (ifFollowerAlreadyExist || this.follwedId == this.authorId ) {
+            if (ifFollowerAlreadyExist || this.followedId == this.authorId ) {
                 this.errors.push('you have already followed this user')
             }
         }
         if (action == 'remove') {
-            if (!ifFollowerAlreadyExist || this.follwedId == this.authorId) {
+            if (!ifFollowerAlreadyExist || this.followedId == this.authorId) {
                 this.errors.push('you are not following this user')
             }
         }
@@ -35,15 +35,15 @@ class Folow {
             this.cleanUp()
             await this.validation('create')
             if (!this.errors.length) {
-                await followsCollection.insertOne({follwedId:this.follwedId,authorId:new ObjectId(this.authorId)})
+                await followsCollection.insertOne({followedId:this.followedId,authorId:new ObjectId(this.authorId)})
                 resolve()
             } else {
                 reject(this.errors)
             }
         })
     }
-    async isVisitorFollowing(follwedId,visitorId){
-    let followDoc = await followsCollection.findOne({follwedId:follwedId,authorId:new ObjectId(visitorId)})
+    async isVisitorFollowing(followedId,visitorId){
+    let followDoc = await followsCollection.findOne({followedId:followedId,authorId:new ObjectId(visitorId)})
     if (followDoc) {
         return true
     } else {
@@ -55,7 +55,7 @@ class Folow {
             this.cleanUp()
             await this.validation('remove')
             if (!this.errors.length) {
-                await followsCollection.deleteOne({follwedId:this.follwedId,authorId:new ObjectId(this.authorId)})
+                await followsCollection.deleteOne({followedId:this.followedId,authorId:new ObjectId(this.authorId)})
                 resolve()
             } else {
                 reject(this.errors)
@@ -67,7 +67,7 @@ class Folow {
         return new Promise( async (resolve,reject)=>{
             try {
                 let followers = await followsCollection.aggregate([
-                    {$match:{follwedId :id }},
+                    {$match:{followedId :id }},
                     {$lookup:{from:'user',localField:'authorId',foreignField:'_id',as:'authorDocument'}},
                     {$project:{
                         username:{$arrayElemAt:["$authorDocument.username",0]},
@@ -85,7 +85,41 @@ class Folow {
         })
     }
 
+    getFollowingById(id){
+        return new Promise( async (resolve,reject)=>{
+            try {
+                let following = await followsCollection.aggregate([
+                    {$match:{authorId :id }},
+                    {$lookup:{from:'user',localField:'followedId',foreignField:'_id',as:'authorDocument'}},
+                    {$project:{
+                        username:{$arrayElemAt:["$authorDocument.username",0]},
+                        email:{$arrayElemAt:["$authorDocument.email",0]}
+                    }},
+                ]).toArray()
+                following = following.map(follow=>{
+                    return {username:follow.username,avatar:new User(follow,true).avatar}
+                })
+                resolve(following)
+            } catch (error) {
+                reject(error)
+            }
+            
+        })
+    }
 
+    countFollowersById(userId){
+        return new Promise( async (resolve,reject)=>{
+            let followers = await followsCollection.countDocuments({followedId:userId})
+            resolve(followers)
+        })
+    }
+
+    countFollowingById(userId){
+        return new Promise( async (resolve,reject)=>{
+            let following = await followsCollection.countDocuments({authorId:userId})
+            resolve(following)
+        })
+    }
 
 
 }

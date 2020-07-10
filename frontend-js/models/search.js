@@ -111,4 +111,3 @@ export default class Search{
       </div>`)
     }
 }
-console.log('kls')

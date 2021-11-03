@@ -34,6 +34,6 @@
     "webpack-cli": "^3.3.12"
   },
   "devDependencies": {
-    "validator": "^13.0.0"
+    "validator": "^13.7.0"
   }
 }
